@@ -1,13 +1,49 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import statsmodels.api as sm
-from itertools import combinations
+import matplotlib.pyplot as plt
+from statsmodels.stats.outliers_influence import variance_inflation_factor 
+import seaborn as sns 
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LassoCV, ElasticNetCV
+from scipy import stats
+import itertools 
+from tqdm import tqdm
+from itertools import combinations 
+import functions as f
 import warnings
 import time
 
 warnings.filterwarnings("ignore", message="No frequency information was provided")
 
+############################################################################################################################
+# Data Preprocessing part
+# Function to comput log returns
+def compute_log_return(series):
+    shifted_series = series.shift(periods=1, axis='index').replace(to_replace=0, value=np.nan)
+    ratio = series / shifted_series
+    # Replace any negative and zero values with NaN (since log is undefined for negative numbers)
+    ratio[ratio <= 0] = np.nan
+    # Calculate the log returns
+    log_returns = np.log(ratio)
+    return log_returns
+
+
+# Function to cap outliers
+def cap_outliers(df, lower_quantile):
+    capped_df = df.copy()
+    upper_quantile= 1-lower_quantile
+    for column in df.columns:
+        if pd.api.types.is_numeric_dtype(df[column]): # Apply only to numeric columns
+            lower_cap = df[column].quantile(lower_quantile)
+            upper_cap = df[column].quantile(upper_quantile)
+            capped_df[column] = np.clip(df[column], lower_cap, upper_cap)
+    return capped_df
+
+#############################################################################################################################
+# Regime Switching Part
+# Fit the MRSM with a rolling window method
 def calculate_rolling_window_regime_probabilities(y, X, window_size, k_regimes=2):
     #General_probabilities
     general_model = sm.tsa.MarkovRegression(y, k_regimes=k_regimes, exog=X, switching_variance=True)
@@ -39,6 +75,7 @@ def calculate_rolling_window_regime_probabilities(y, X, window_size, k_regimes=2
     rolling_probabilities_matrix.dropna(inplace=True)
     return {'General_Probabilities': general_probabilities,'Rolling_Probabilities': rolling_probabilities_matrix}
 
+# Fit the MRSM with an expanding window method
 def calculate_expanding_window_regime_probabilities(y, X, k_regimes, increment_size, initial_data_size):
     # General Probabilities
     general_model = sm.tsa.MarkovRegression(y, k_regimes=k_regimes, exog=X, switching_variance=True)
@@ -83,11 +120,8 @@ def calculate_expanding_window_regime_probabilities(y, X, k_regimes, increment_s
 
     return {'General_Probabilities': general_probabilities,'Expanding_Window_Probabilities': expanding_probabilities_matrix}
 
-
+# Optimization of teh model on an AIC base
 def best_AIC_algorithm(y, X, lasso_selected_features):
-    """
-    Function to identify the best feature combination using AIC with a step-forward approach.
-    """
     target = y['MOM_log_return']
     target.index = pd.date_range(start=target.index[0], periods=len(target), freq='W') # Weekly frequency
     
@@ -133,11 +167,8 @@ def best_AIC_algorithm(y, X, lasso_selected_features):
         print(f"Features: {', '.join(subset)} | AIC: {aic:.4f}")
     return {"Best Features": best_features, "Lowest AIC": best_aic}
 
-
+# Optimization of teh model on an BIC base
 def best_BIC_algorithm(y, X, lasso_selected_features):
-    """
-    Function to identify the best feature combination using BIC with a step-forward approach.
-    """
     target = y['MOM_log_return']
     target.index = pd.date_range(start=target.index[0], periods=len(target), freq='W') # Weekly frequency
     
@@ -183,19 +214,8 @@ def best_BIC_algorithm(y, X, lasso_selected_features):
         print(f"Features: {', '.join(subset)} | BIC: {bic:.4f}")
     return {"Best Features": best_features, "Lowest BIC": best_bic}
 
+# calculate main statistics of the strategy for the case with a neutral zone with forward-filling  
 def calculate_strategy_statistics_neutral_zone(data_w, regime_probabilities):
-    """
-    Calculate strategy statistics and create the regimes_binary DataFrame.
-
-    Parameters:
-        data_w (pd.DataFrame): Input data containing 'LOW_VOL', 'MOM', and 'MSCI' columns.
-        regime_probabilities (pd.DataFrame): Regime probabilities with columns for each regime.
-
-    Returns:
-        dict: A dictionary containing statistics for each strategy and the selected regime.
-        pd.DataFrame: The regimes_binary DataFrame.
-    """
-
     # Calculate returns
     for col in ['LOW_VOL', 'MOM', 'MSCI']:
         data_w[f'{col}_Return'] = data_w[col].pct_change()
@@ -240,10 +260,6 @@ def calculate_strategy_statistics_neutral_zone(data_w, regime_probabilities):
             regimes_binary.iloc[i, regimes_binary.columns.get_loc('Regime 1')] = \
                 regimes_binary.iloc[i - 1, regimes_binary.columns.get_loc('Regime 1')]
 
-
-    
-
-    
     regimes_binary['LOW_VOL_Return_shifted'] = regimes_binary['LOW_VOL_Return'].shift(-1)
     regimes_binary['MOM_Return_shifted'] = regimes_binary['MOM_Return'].shift(-1)
 
@@ -266,19 +282,8 @@ def calculate_strategy_statistics_neutral_zone(data_w, regime_probabilities):
 
     return stats, regimes_binary, dynamic_returns
     
+# calculate main statistics of the strategy for the case with a neutral zone without forward-filling  
 def neutral_zone_no_fill(data_w, regime_probabilities):
-    """
-    Calculate strategy statistics and create the regimes_binary DataFrame.
-
-    Parameters:
-        data_w (pd.DataFrame): Input data containing 'LOW_VOL', 'MOM', and 'MSCI' columns.
-        regime_probabilities (pd.DataFrame): Regime probabilities with columns for each regime.
-
-    Returns:
-        dict: A dictionary containing statistics for each strategy and the selected regime.
-        pd.DataFrame: The regimes_binary DataFrame.
-    """
-
     # Calculate returns
     for col in ['LOW_VOL', 'MOM', 'MSCI']:
         data_w[f'{col}_Return'] = data_w[col].pct_change()
@@ -314,10 +319,6 @@ def neutral_zone_no_fill(data_w, regime_probabilities):
     regimes_binary['Regime 0'] = (regimes_binary['Regime 0'] > 0.9).astype(int)
     regimes_binary['Regime 1'] = (regimes_binary['Regime 1'] > 0.9).astype(int)
 
-
-    
-
-    
     regimes_binary['LOW_VOL_Return_shifted'] = regimes_binary['LOW_VOL_Return'].shift(-1)
     regimes_binary['MOM_Return_shifted'] = regimes_binary['MOM_Return'].shift(-1)
 
@@ -340,19 +341,8 @@ def neutral_zone_no_fill(data_w, regime_probabilities):
 
     return stats, regimes_binary, dynamic_returns
 
+# calculate main statistics of the strategy    
 def calculate_strategy_statistics(data_w, regime_probabilities):
-    """
-    Calculate strategy statistics and create the regimes_binary DataFrame.
-
-    Parameters:
-        data_w (pd.DataFrame): Input data containing 'LOW_VOL', 'MOM', and 'MSCI' columns.
-        regime_probabilities (pd.DataFrame): Regime probabilities with columns for each regime.
-
-    Returns:
-        dict: A dictionary containing statistics for each strategy and the selected regime.
-        pd.DataFrame: The regimes_binary DataFrame.
-    """
-
     # Calculate returns
     for col in ['LOW_VOL', 'MOM', 'MSCI']:
         data_w[f'{col}_Return'] = data_w[col].pct_change()
@@ -408,17 +398,8 @@ def calculate_strategy_statistics(data_w, regime_probabilities):
 
     return stats, regimes_binary, dynamic_returns
 
+# Give main statistics of the regime switching allocation
 def analyze_regime_switches(regimes_binary):
-    """
-    Analyze regime switches in the given regimes_binary DataFrame.
-
-    Parameters:
-        regimes_binary (pd.DataFrame): DataFrame with binary regime indicators.
-
-    Returns:
-        tuple: A tuple containing the number of weeks allowed to MOM, LOW_VOL portfolios,
-               the number of switches made, and a DataFrame of switch dates and corresponding regimes.
-    """
 
     # Count the number of weeks in each regime
     N_time_MOM = np.sum(regimes_binary['Regime 0'])
@@ -446,14 +427,8 @@ def analyze_regime_switches(regimes_binary):
 
     return N_time_MOM, N_time_LOW_VOL, switch_count, start_date, end_date, switch_df
 
+# Plotr the regime allocatin across time
 def plot_regime_activation(regimes_binary, title):
-    """
-    Plot the activation of regimes over time.
-
-    Parameters:
-        regimes_binary (pd.DataFrame): DataFrame with binary regime indicators.
-    """
-
     # Create a figure and axis object
     fig, ax = plt.subplots(figsize=(20,6))
 
