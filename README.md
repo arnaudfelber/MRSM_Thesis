@@ -20,10 +20,6 @@
 
 ---
 
-![MRSM Regime Allocation](images/Activation of Regimes Over Time - Final Case.png)
-
-<!-- ABOUT THE PROJECT -->
-
 ## 📖 Abstract
 
 
