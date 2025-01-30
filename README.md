@@ -1,52 +1,86 @@
-Dynamic Portfolio Allocation using Markov Regime Switching Model (MRSM)
+<!-- Able a quick return to the top page -->
+<a name="readme-top"></a>
 
-This repository contains the codebase for my Master Thesis, which explores the application of a Markov Regime Switching Model (MRSM) for dynamic portfolio allocation. The study focuses on switching between Minimum Volatility and Momentum strategies, optimizing risk-adjusted returns by dynamically adapting to market regimes.
-Overview
-
-The research aims to develop a quantitative investment strategy that leverages MRSM to enhance portfolio allocation by:
-
-    - Identifying optimal regime switches between Minimum Volatility and Momentum strategies.
-    - Applying advanced feature selection techniques like Elastic Net and Akaike Information Criterion (AIC) to optimize model inputs.
-    - Implementing an Expanding Window approach to improve model calibration and reduce forward bias.
-    - Evaluating performance metrics, including annualized return, Sharpe ratio, and volatility, in comparison to benchmark indices.
-    - Evaluating relative switch performances, short term investment horizon and worst drawdown scenario
-
-Repository Structure
-
-This repository is structured into three main phases:
-1. The data extraction through extraction.ipynb
-2. The data preprocessing through data_preprocessing
-3. The MRSM and Dynamic Portfolio Allocation strategy implementation and results through regime_switching
-
-The code needs to be run in the same order, the initial dataset is the csv named data in the file data. With this data we can avoid the data extraction which is relied to a Bloomberg access. 
+<!-- PROJECT LOGO -->
+<br />
 
 
-Key Findings
+<h3 align="center">Dynamic Portfolio Allocation Using Markov Regime Switching Model: </h3>
 
-    - MRSM effectively captures market regimes, dynamically switching between Minimum Volatility and Momentum strategies.
-    - Annualized return of 8.7% and a Sharpe ratio of 1.06, outperforming static benchmarks.
-    - Low volatility (8.2%) compared to market indices, achieving better risk-adjusted returns.
-    - Expanding Window approach reduces forward bias, improving model calibration over time.
-    - Low transaction frequency, making the strategy practical for real-world investment applications.
-    - The strategy has a goog long and short term return
-    - The strategy is resilient in market downturn
+  <p align="center">
+     Momentum & Low-Volatility Strategies
+    
+  </p>
+</div>
 
-Future Improvements
+---
 
-    - Testing additional explanatory variables (e.g., macroeconomic indicators, monetary policy signals).
-    - Exploring alternative regime-switching models (e.g., Hidden Markov Models, neural networks).
-    - Refining allocation strategy by incorporating a third regime for better adaptability.
-    - Increasing dataset size to improve accuracy while balancing computational complexity.
+**Author:** [Arnaud Felber](https://people.epfl.ch/arnaud.felber?lang=en)
 
-Acknowledgments
 
-Special thanks to Jean-Mark Lueder for insights on Minimum Volatility strategies and Bank Julius Bär & Co. Ltd. for supporting this financial research.
+---
 
-Special thanks to Pierre Collin Dufresne for the academic supervision and EPFL for the education.
+![MRSM Regime Allocation](images/Activation of Regimes Over Time - Final Case.png)
 
-Contact
-If you have any questions or suggestions, feel free to reach out:
+<!-- ABOUT THE PROJECT -->
 
-📧 arnaudfel@gmail.com
-🔗 LinkedIn: www.linkedin.com/in/arnaud-felber-a20971300
-📂 GitHub: https://github.com/arnaudfelber/MRSM_Thesis
+## 📖 Abstract
+
+
+This research explores the application of dynamic portfolio allocation using the Markov Regime Switching Model (MRSM), focusing on transitions between Minimum Volatility and Momentum strategies. The goal of this dynamic strategy is to combine the complementarity stability of the Minimum Volatility strategy with the growth potential of the Momentum strategy. Thereby, the strategy balances risk and return by adapting to market conditions. The study employs advanced data preprocessing techniques to identify the variables subset. It includes feature selection through Elastic Net regression and Akaike Information Criterion (AIC) optimization. In addition, the Expanding Window method has been used to reduce potential forward bias and improve regime detection over time. The results underscore the efficacy of MRSM application to dynamic portfolio allocation strategy. The strategy achieves an annualized return of 8.7%, comparable to the MSCI World Index, and maintains a low volatility of 8.2%. With a Sharpe ratio of 1.06, the strategy outperforms other analysed strategies. This performance can be attributed to the model’s precision in regime allocation, its ability to capture long-term dependencies, and its performance gains relative to the switch decision. Additionally, the dynamic nature of the strategy mitigates drawdowns during periods of uncertainty and takes advantage of recovery and growth opportunities. Also, the low transaction frequency improves the practicality of the investment strategy by minimizing transactions and operational costs. Finally, this study contributes to the Markov Regime Switching Model applications and offers direction for future research in adaptive portfolio management.
+
+---
+
+## 💻 Getting Started  
+
+To run this project, follow these steps:  
+
+### **Requirements**  
+Before running the code, ensure you have the following installed:  
+
+- **Python** 3.8+  
+- **Jupyter Notebook**  
+- **Required Python libraries:**
+numpy, pandas, matplotlib, scikit-learn, statsmodels
+
+---
+
+## 🚀 Running the Code  
+
+Execute the Jupyter Notebooks **in the following order**:  
+
+1️⃣ **Data Extraction** → `extraction.ipynb` *(Optional if using provided dataset)*  
+2️⃣ **Data Preprocessing** → `data_preprocessing.ipynb`  
+3️⃣ **MRSM Implementation & Results** → `regime_switching.ipynb`  
+
+📌 **Note**: If you don't have Bloomberg API access, use the provided dataset (`data.csv`) inside the **data/** folder.  
+
+---
+
+## 📊 Key Findings
+
+- **Dynamic Market Adaptation:** MRSM effectively captures market regimes, dynamically switching between Minimum Volatility and Momentum strategies.
+- **Strong Performance:** Achieves an **annualized return of 8.7%** and a **Sharpe ratio of 1.06**.
+- **Risk Management:** Maintains **low volatility (8.2%)**, delivering superior risk-adjusted returns compared to market indices.
+- **Practical Implementation:** Low transaction frequency minimizes costs, making the strategy **feasible for real-world investment applications**.
+- **Consistent Returns:** The strategy demonstrates **strong long-term and short-term performance**.
+- **Resilience in Market Downturns:** Effectively mitigates drawdowns and recovers faster than static allocation models.
+
+---
+## 🔬 Future Improvements
+
+- Testing additional explanatory variables (e.g., macroeconomic indicators, monetary policy signals).
+- Exploring alternative regime-switching models (e.g., Hidden Markov Models, neural networks).
+- Refining allocation strategy by incorporating a third regime for better adaptability.
+- Increasing dataset size to improve accuracy while balancing computational complexity.
+
+
+
+---
+## 🙌 Acknowledgments
+
+A special thanks to the following individuals and institutions for their contributions and support:
+
+- **Jean-Mark Lueder** – Insights on Minimum Volatility strategies and support from Bank Julius Bär & Co. Ltd.
+- **Pierre Collin-Dufresne** – Academic supervision and guidance.
+- **EPFL** – Providing the educational foundation for this research.
