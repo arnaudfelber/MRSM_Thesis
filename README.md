@@ -75,8 +75,7 @@ Execute the Jupyter Notebooks **in the following order**:
 ---
 ## 🙌 Acknowledgments
 
-A special thanks to the following individuals and institutions for their contributions and support:
+A special thanks to the two suppervisior for their contributions and support:
 
-- **Jean-Mark Lueder** – Insights on Minimum Volatility strategies and support from Bank Julius Bär & Co. Ltd.
-- **Pierre Collin-Dufresne** – Academic supervision and guidance.
-- **EPFL** – Providing the educational foundation for this research.
+- **Jean-Mark Lueder** Provided insights on Minimum Volatility strategies, supported daily activities, and served as a representative of Bank Julius Bär & Co. Ltd.
+- **Pierre Collin-Dufresne**  – Offered academic supervision and guidance from EPFL.
